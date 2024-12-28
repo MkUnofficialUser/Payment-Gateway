@@ -1,1 +1,36 @@
+name: Sync Forked Repository
 
+on:
+  schedule:
+    - cron: '0 */12 * * *'  # हर 12 घंटे पर sync होगा
+  workflow_dispatch:        # मैनुअल ट्रिगर के लिए
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout Forked Repository
+      - name: Checkout Forked Repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      # Step 2: Configure Upstream Remote
+      - name: Configure Upstream Remote
+        run: |
+          git remote add upstream https://github.com/MkUnofficialUser/Payment-Gateway
+          git fetch upstream
+
+      # Step 3: Sync Changes with Upstream
+      - name: Sync Changes
+        run: |
+          git checkout main
+          git merge upstream/main --allow-unrelated-histories
+
+      # Step 4: Push Changes Back to Forked Repository
+      - name: Push Changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin main
